@@ -33,10 +33,12 @@ def read_all():
     return {"message": "List semua product", "data": product_db}
 
 @app.get("/product/{product_id}")
-def read_all(product_id: int):
-    if product_id not in product_db.keys():
+def read_one(product_id: int):
+    try:
+        product = product_db[product_id]
+        return {"message": f"Product dengan id {product_id}", "data": product_db[product_id]}
+    except:
         return not_found(product_id)
-    return {"message": f"Product dengan id {product_id}", "data": product_db[product_id]}
 
 @app.post("/product")
 def create_product(product: Product):
@@ -48,20 +50,22 @@ def create_product(product: Product):
 
 @app.put("/product/{product_id}")
 def update_product(product_id:int, product: ProductUpdate):
-    if product_id not in product_db.keys():
+    if product_id in product_db.keys():
+        product = dict(product)
+        for field in product.keys():
+            if product[field] != None:
+                product_db[product_id][field] = product[field]
+        return {"message": f"produk dengan id {product_id} berhasil diubah", "data": product_db[product_id]}
+    else:
         return not_found(product_id)
-    product = dict(product)
-    for field in product.keys():
-        if product[field] != None:
-            product_db[product_id][field] = product[field]
-    return {"message": f"produk dengan id {product_id} berhasil diubah", "data": product_db[product_id]}
 
 @app.delete("/product/{product_id}")
 def delete_product(product_id:int):
-    if product_id not in product_db.keys():
+    try:
+        del product_db[product_id]
+        return {"message":f"Produk dengan id {product_id} berhasil dihapus"}
+    except:
         return not_found(product_id)
-    del product_db[product_id]
-    return {"message":f"Produk dengan id {product_id} berhasil dihapus"}
 
 @app.post("/file")
 def upload_file(files: List[UploadFile]):
